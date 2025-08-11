@@ -3,71 +3,71 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Fast Chat – S1 프런트</title>
+  <title>Fast Chat (S1)</title>
   <style>
-    :root { --maxw: 820px; }
+    :root { --maxw: 860px; }
     * { box-sizing: border-box; }
     body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans KR, "Apple SD Gothic Neo", sans-serif; margin: 0; background: #0b0f14; color: #e6edf3; }
-    .wrap { max-width: var(--maxw); margin: 0 auto; padding: 24px 16px 160px; }
-    header { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 12px; }
-    .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    a { color: #9bd2ff; text-decoration: none; }
+    .wrap { max-width: var(--maxw); margin: 0 auto; padding: 20px 16px 120px; }
+    header { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; margin-bottom: 8px; }
     h1 { font-size: 18px; font-weight: 700; margin: 0; letter-spacing: .2px; }
+    .topline { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .pill { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius: 999px; border:1px solid #263247; background:#0f1720; font-size:12px; }
+    select, button.small, input.small { height: 32px; border-radius: 10px; border:1px solid #2a3950; background:#15202b; color:#e6edf3; padding:0 10px; }
+    button.small[disabled]{ opacity:.6; cursor: not-allowed; }
+    .muted { opacity:.75; font-size:12px; }
     .latency { font-size: 12px; opacity: .75; }
-    .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-    .controls input, .controls select { height: 34px; padding: 0 10px; border-radius: 10px; border: 1px solid #233045; background: #0b121a; color: #e6edf3; }
-    .controls button { height: 34px; border-radius: 10px; border: 1px solid #2a3950; background: #15202b; color: #e6edf3; padding: 0 10px; cursor: pointer; }
-    .sid { font-size: 12px; opacity: .75; }
-    .chat { display: flex; flex-direction: column; gap: 10px; }
-    .msg { padding: 12px 14px; border-radius: 14px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
-    .user { background: #1b2530; align-self: flex-end; border: 1px solid #253247; }
-    .bot { background: #0f1720; align-self: flex-start; border: 1px solid #1a2635; }
-    .pending { opacity: .85; }
-    .sys { align-self: center; font-size: 12px; opacity: .7; }
-    .footer { position: fixed; left: 0; right: 0; bottom: 0; background: #0d141b; border-top: 1px solid #1a2432; }
-    .inp { max-width: var(--maxw); margin: 0 auto; display: grid; gap: 8px; grid-template-columns: 1fr auto auto; padding: 12px 16px; }
-    textarea { resize: none; width: 100%; height: 44px; padding: 12px; border-radius: 12px; border: 1px solid #233045; background: #0b121a; color: #e6edf3; outline: none; }
-    button { height: 44px; border-radius: 12px; border: 1px solid #2a3950; background: #15202b; color: #e6edf3; padding: 0 14px; cursor: pointer; }
-    button[disabled] { opacity: .6; cursor: not-allowed; }
-    .hint { grid-column: 1 / -1; font-size: 12px; opacity: .7; }
-    .link { color: #9bd2ff; text-decoration: none; }
-
-    .missing { max-width: var(--maxw); margin: 0 auto; padding: 8px 16px 0; }
-    .missing .box { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px; border: 1px dashed #2a3950; border-radius: 10px; background: #0b121a; }
-    .missing label { font-size: 12px; opacity: .85; }
-    .missing input { height: 34px; padding: 0 10px; border-radius: 10px; border: 1px solid #233045; background: #0b121a; color: #e6edf3; }
-    .hidden { display: none; }
+    .chat { display:flex; flex-direction:column; gap:10px; margin-top: 8px; }
+    .msg { padding:12px 14px; border-radius:14px; line-height:1.5; white-space:pre-wrap; word-break:break-word; }
+    .user { background:#1b2530; align-self:flex-end; border:1px solid #253247; }
+    .bot { background:#0f1720; align-self:flex-start; border:1px solid #1a2635; }
+    .pending { opacity:.85; }
+    .sys { align-self:center; font-size:12px; opacity:.75; }
+    .footer { position:fixed; left:0; right:0; bottom:0; background:#0d141b; border-top:1px solid #1a2432; }
+    .inp { max-width:var(--maxw); margin:0 auto; display:grid; gap:8px; grid-template-columns: 1fr auto auto auto; padding:12px 16px; }
+    textarea { resize:none; width:100%; height:56px; padding:12px; border-radius:12px; border:1px solid #233045; background:#0b121a; color:#e6edf3; outline:none; }
+    button { height:56px; border-radius:12px; border:1px solid #2a3950; background:#15202b; color:#e6edf3; padding:0 14px; cursor:pointer; }
+    button[disabled]{ opacity:.6; cursor:not-allowed; }
+    .hint { grid-column:1 / -1; font-size:12px; opacity:.7; }
+    code { background:#0f1720; border:1px solid #1a2635; padding:2px 6px; border-radius:6px; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <div class="top">
-        <h1>⚡ Fast Chat (S1)</h1>
-        <div class="latency" id="latency">TTFB: — / Done: —</div>
-      </div>
+      <h1>⚡ Fast Chat (S1)</h1>
+      <div class="latency" id="latency">TTFB: — / Done: —</div>
+    </header>
 
-      <div class="controls">
-        <label for="tenant">tenant</label>
-        <input id="tenant" value="default" placeholder="tenant" />
-        <label for="assistant">assistant</label>
-        <select id="assistant">
+    <div class="topline">
+      <span class="pill">tenant
+        <select id="tenantSel">
           <option value="default" selected>default</option>
+        </select>
+      </span>
+
+      <span class="pill">assistant
+        <select id="assistantSel">
+          <option value="default" selected>default (상담예약)</option>
           <option value="sales">sales</option>
           <option value="support">support</option>
           <option value="visa">visa</option>
         </select>
-        <button id="restartSmall">새 대화</button>
-        <button id="finalize">상담 접수</button>
-        <span class="sid" id="sidLbl"></span>
-      </div>
-    </header>
+      </span>
+
+      <button class="small" id="newChatBtn">새 대화</button>
+      <button class="small" id="finalizeBtn">상담 접수</button>
+
+      <span class="pill muted">sid: <span id="sidLbl">—</span></span>
+    </div>
+
+    <div class="muted" style="margin-top:6px;">
+      빠른 사용법: 메시지를 입력하고 Enter를 누르세요. 스트리밍으로 바로 표시됩니다. <br/>
+      TIP: 상단의 <b>tenant/assistant</b>를 바꾸고 <b>“새 대화”</b>를 누르면 새로운 세션으로 시작합니다.
+    </div>
 
     <div id="chat" class="chat" aria-live="polite" aria-busy="false"></div>
-  </div>
-
-  <!-- 부족 정보 폼 -->
-  <div id="missingBox" class="missing hidden">
-    <div class="box" id="missingFields"></div>
   </div>
 
   <div class="footer">
@@ -75,56 +75,48 @@
       <textarea id="input" placeholder="무엇이든 물어보세요… (Enter=전송, Shift+Enter=줄바꿈)" spellcheck="false"></textarea>
       <button id="send">전송</button>
       <button id="cancel" disabled>중단</button>
+      <button id="state">상태</button>
       <div class="hint">
-        <strong>엔드포인트:</strong> <code id="endpointLbl"></code> · 
-        <span>/session/start, /chat, /lead/finalize 사용</span>
+        <strong>API:</strong> <code id="endpointLbl"></code> · <span>초기 진입 시 자동으로 세션을 시작하고, 안내 질문을 즉시 띄웁니다.</span>
       </div>
     </div>
   </div>
 
 <script>
-/***** 엔드포인트 설정 *****/
-const WORKER_ORIGIN = "https://stream-chat-worker.koreavisa.workers.dev";
-const API_URL = `${WORKER_ORIGIN}/chat`;          // 기존 코드 호환
-const API_SESSION = `${WORKER_ORIGIN}/session/start`;
-const API_FINALIZE = `${WORKER_ORIGIN}/lead/finalize`;
-const USE_MOCK = false;
+/** ===================== 설정 ===================== **/
+const API_BASE = "https://stream-chat-worker.koreavisa.workers.dev";
+const API = {
+  START:    `${API_BASE}/session/start`,
+  CHAT:     `${API_BASE}/chat`,
+  FINALIZE: `${API_BASE}/lead/finalize`,
+  STATE:    `${API_BASE}/__state`,
+};
+document.getElementById('endpointLbl').textContent = API_BASE;
 
-document.getElementById('endpointLbl').textContent = API_URL || (USE_MOCK ? '(MOCK 모드)' : '(미설정)');
-
+/** ===================== 엘리먼트 참조 ===================== **/
 const $chat = document.getElementById('chat');
 const $input = document.getElementById('input');
 const $send = document.getElementById('send');
 const $cancel = document.getElementById('cancel');
+const $state = document.getElementById('state');
 const $latency = document.getElementById('latency');
-const $tenant = document.getElementById('tenant');
-const $assistant = document.getElementById('assistant');
+const $tenantSel = document.getElementById('tenantSel');
+const $assistantSel = document.getElementById('assistantSel');
 const $sidLbl = document.getElementById('sidLbl');
-const $missingBox = document.getElementById('missingBox');
-const $missingFields = document.getElementById('missingFields');
+const $newChatBtn = document.getElementById('newChatBtn');
+const $finalizeBtn = document.getElementById('finalizeBtn');
 
 let controller = null; // AbortController
 
-const SID = (() => {
-  try {
-    let s = localStorage.getItem('sid');
-    if (!s) {
-      s = (crypto.randomUUID ? crypto.randomUUID() :
-           (Date.now()+"-"+Math.random().toString(16).slice(2)));
-      localStorage.setItem('sid', s);
-    }
-    return s;
-  } catch {
-    return String(Date.now());
-  }
-})();
-updateSidLbl();
+/** ===================== SID/상태 ===================== **/
+function getSID(){ try { return localStorage.getItem('sid') || ""; } catch { return ""; } }
+function setSID(v){ try { localStorage.setItem('sid', v); } catch {} $sidLbl.textContent = v ? `${v.slice(0,4)}…${v.slice(-4)}` : '—'; }
+function getTenant(){ try { return localStorage.getItem('tenant') || 'default'; } catch { return 'default'; } }
+function setTenant(v){ try { localStorage.setItem('tenant', v); } catch {} $tenantSel.value = v; }
+function getAssistant(){ try { return localStorage.getItem('assistant') || 'default'; } catch { return 'default'; } }
+function setAssistant(v){ try { localStorage.setItem('assistant', v); } catch {} $assistantSel.value = v; }
 
-function updateSidLbl() {
-  $sidLbl.textContent = `sid: ${SID.slice(0,8)}…`;
-}
-
-function addMsg(role, text, pending=false) {
+function addMsg(role, text, pending=false){
   const div = document.createElement('div');
   div.className = `msg ${role} ${pending ? 'pending' : ''}`;
   div.textContent = text;
@@ -132,8 +124,7 @@ function addMsg(role, text, pending=false) {
   $chat.scrollTop = $chat.scrollHeight;
   return div;
 }
-
-function addSys(text) {
+function addSys(text){
   const div = document.createElement('div');
   div.className = 'sys';
   div.textContent = text;
@@ -141,115 +132,102 @@ function addSys(text) {
   $chat.scrollTop = $chat.scrollHeight;
   return div;
 }
-
-function setBusy(b) {
+function setBusy(b){
   $send.disabled = b;
   $cancel.disabled = !b;
   $chat.setAttribute('aria-busy', String(b));
 }
+function fmtMs(ms){ return (ms||ms===0) ? `${ms}ms` : '—'; }
 
-function fmtMs(ms) { return ms ? `${ms}ms` : '—'; }
-
-async function startSession(sidOverride) {
-  const sid = sidOverride || SID;
-  try {
-    await fetch(API_SESSION, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json; charset=utf-8' },
-      body: JSON.stringify({ sid, tenant: $tenant.value || 'default', assistant: $assistant.value || 'default' }),
-    });
-  } catch (e) {
-    console.warn('session/start fail', e);
-  }
-}
-
-function getCtx() {
-  return {
-    sid: SID,
-    tenant: $tenant.value || 'default',
-    assistant: $assistant.value || 'default',
+/** ===================== API 호출 ===================== **/
+async function startSession(opts={}){
+  const body = {
+    sid: getSID() || undefined,
+    tenant: opts.tenant || getTenant(),
+    assistant: opts.assistant || getAssistant()
   };
+  const r = await fetch(API.START, {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) throw new Error(`세션 시작 실패 (${r.status})`);
+  const j = await r.json();
+  if (!j?.sid) throw new Error('sid 없음');
+  setSID(j.sid);
+  return j.sid;
 }
 
-// 공용 전송 함수(입력값 대신 직접 텍스트 보낼 때도 사용)
-async function send(textOpt) {
-  const text = (textOpt != null) ? String(textOpt).trim() : $input.value.trim();
+async function chatSend(text, { showUserBubble = true } = {}){
   if (!text) return;
-  if (!textOpt) $input.value = '';
-  addMsg('user', text);
+  if (showUserBubble) addMsg('user', text);
 
   setBusy(true);
   let t0 = performance.now();
-  let tFirst = null;
-  $latency.textContent = `TTFB: … / Done: …`;
+  let tFirst = null; $latency.textContent = `TTFB: … / Done: …`;
 
   const bot = addMsg('bot', '', true);
 
-  try {
-    if (USE_MOCK || !API_URL) {
-      await mockStream(bot, t0, (msFirst)=>{ tFirst = msFirst; $latency.textContent = `TTFB: ${fmtMs(tFirst)} / Done: …`; });
-    } else {
-      controller = new AbortController();
-      const ctx = getCtx();
-      const resp = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json; charset=utf-8' },
-        body: JSON.stringify({ message: text, sid: ctx.sid, tenant: ctx.tenant, assistant: ctx.assistant }),
-        signal: controller.signal,
-      });
+  try{
+    controller = new AbortController();
+    const resp = await fetch(API.CHAT, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({
+        message: text,
+        sid: getSID(),
+        tenant: getTenant(),
+        assistant: getAssistant()
+      }),
+      signal: controller.signal
+    });
 
-      if (!resp.ok || !resp.body) throw new Error(`서버 오류: ${resp.status}`);
+    if (!resp.ok || !resp.body) throw new Error(`서버 오류: ${resp.status}`);
 
-      const reader = resp.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
 
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        if (tFirst === null) {
-          tFirst = Math.round(performance.now() - t0);
-          $latency.textContent = `TTFB: ${fmtMs(tFirst)} / Done: …`;
-        }
-        buffer += chunk;
+    while(true){
+      const { value, done } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value, { stream:true });
 
-        const isSSE = (resp.headers.get('content-type') || '').includes('text/event-stream');
-        if (isSSE) {
-          const parts = buffer.split('\n\n');
-          buffer = parts.pop();
-          for (const p of parts) {
-            const dataLines = p.split('\n')
-              .filter(l => l.startsWith('data:'))
-              .map(l => l.replace(/^data:\s?/, ''));
-            for (const data of dataLines) {
-              if (!data || data === '[DONE]') continue;
-              let out = '';
-              try {
-                const obj = JSON.parse(data);
-                if (obj?.choices?.length) {
-                  for (const ch of obj.choices) out += (ch?.delta?.content || ch?.text || '');
-                }
-              } catch { out = data; }
-              if (out) bot.textContent += out;
-            }
-          }
-        } else {
-          const lines = buffer.split('\n');
-          buffer = lines.pop();
-          for (const ln of lines) {
-            const t = ln.trim();
-            if (!t) continue;
+      if (tFirst === null){ tFirst = Math.round(performance.now() - t0); $latency.textContent = `TTFB: ${fmtMs(tFirst)} / Done: …`; }
+
+      buffer += chunk;
+      const isSSE = (resp.headers.get('content-type')||'').includes('text/event-stream');
+
+      if (isSSE){
+        const parts = buffer.split('\n\n');
+        buffer = parts.pop();
+        for (const p of parts){
+          const lines = p.split('\n').filter(l => l.startsWith('data:')).map(l => l.replace(/^data:\s?/, ''));
+          for (const data of lines){
+            if (!data || data === '[DONE]') continue;
+            let out = '';
             try {
-              const obj = JSON.parse(t);
-              const out = (obj?.delta ?? obj?.text ?? obj?.choices?.[0]?.delta?.content ?? '');
-              bot.textContent += out || t;
-            } catch { bot.textContent += t; }
+              const obj = JSON.parse(data);
+              if (obj?.choices?.length){
+                for (const ch of obj.choices) out += (ch?.delta?.content || ch?.text || '');
+              }
+            } catch { out = data; }
+            if (out) bot.textContent += out;
           }
+        }
+      } else {
+        const lines = buffer.split('\n'); buffer = lines.pop();
+        for (const ln of lines){
+          const t = ln.trim(); if (!t) continue;
+          try {
+            const obj = JSON.parse(t);
+            const out = (obj?.delta ?? obj?.text ?? obj?.choices?.[0]?.delta?.content ?? '');
+            bot.textContent += out || t;
+          } catch { bot.textContent += t; }
         }
       }
     }
-  } catch (err) {
+  } catch(err){
     console.error(err);
     bot.textContent += `\n[오류] ${err.message || err}`;
   } finally {
@@ -261,102 +239,97 @@ async function send(textOpt) {
   }
 }
 
-// 부족 필드 폼 표시
-function showMissingForm(missing) {
-  $missingFields.innerHTML = '';
-  for (const k of missing) {
-    const label = document.createElement('label');
-    label.textContent = k;
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.placeholder = `${k} 입력`;
-    input.name = k;
-    $missingFields.appendChild(label);
-    $missingFields.appendChild(input);
-  }
-  const btn = document.createElement('button');
-  btn.textContent = '빠르게 제출';
-  btn.type = 'button';
-  btn.style.marginLeft = '8px';
-  btn.onclick = async () => {
-    const values = {};
-    [...$missingFields.querySelectorAll('input')].forEach(i => { values[i.name] = i.value.trim(); });
-    // 대화로 한번에 전달 → 백엔드가 추출하여 KV에 저장
-    const parts = [];
-    if (values.name) parts.push(`제 이름은 ${values.name}입니다`);
-    if (values.phone) parts.push(`연락처는 ${values.phone}입니다`);
-    if (values.email) parts.push(`이메일은 ${values.email}입니다`);
-    if (values.topic) parts.push(`상담 주제는 ${values.topic}입니다`);
-    if (values.issue) parts.push(`이슈는 ${values.issue}입니다`);
-    if (values.nationality) parts.push(`국적은 ${values.nationality}입니다`);
-    if (values.visa_type) parts.push(`비자 유형은 ${values.visa_type}입니다`);
-    const msg = parts.length ? parts.join('. ') + '.' : '정보를 입력했습니다.';
-    await send(msg);
-    // 잠시 후 자동 최종화 재시도
-    setTimeout(finalizeLead, 900);
-  };
-  $missingFields.appendChild(btn);
-  $missingBox.classList.remove('hidden');
-}
-
-async function finalizeLead() {
-  try {
-    const resp = await fetch(API_FINALIZE, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json; charset=utf-8' },
-      body: JSON.stringify({ sid: SID }),
-    });
-    const j = await resp.json();
-    if (j.ok) {
-      $missingBox.classList.add('hidden');
-      addSys('✅ 상담 접수 완료! 곧 연락드리겠습니다.');
-    } else if (Array.isArray(j.missing) && j.missing.length) {
-      addSys('ℹ️ 추가 정보가 필요합니다: ' + j.missing.join(', '));
-      showMissingForm(j.missing);
-    } else {
-      addSys('접수 실패: ' + (j.error || '원인 불명'));
-    }
-  } catch (e) {
-    addSys('접수 중 오류: ' + (e.message || e));
+async function finalizeLead(){
+  const sid = getSID();
+  if (!sid) return addSys('sid가 없습니다. 새 대화로 시작해 주세요.');
+  const r = await fetch(API.FINALIZE, {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json' },
+    body: JSON.stringify({ sid })
+  });
+  const j = await r.json();
+  if (j.ok){
+    addSys('✅ 상담 접수 완료! 담당자가 곧 연락드립니다.');
+  } else if (j.missing && j.missing.length){
+    addSys(`아직 필요한 정보가 부족합니다: ${j.missing.join(', ')}\n해당 항목을 채워 주세요.`);
+  } else {
+    addSys(`접수 실패: ${j.error || '알 수 없는 오류'}`);
   }
 }
 
-async function mockStream(el, t0, onFirst) {
-  const wait = (ms)=> new Promise(r=> setTimeout(r, ms));
-  await wait(150 + Math.random()*250);
-  onFirst(Math.round(performance.now() - t0));
-  const demo = "안녕하세요! 여기는 백엔드 없이 동작하는 MOCK 모드입니다.\n\nS2에서 Cloudflare Workers의 /chat 엔드포인트가 준비되면, 상단의 엔드포인트 설정을 실제 주소로 바꾸고 USE_MOCK=false로 설정하세요.";
-  const tokens = demo.split("");
-  for (const ch of tokens) {
-    el.textContent += ch;
-    await wait(8 + Math.random()*10);
+async function showState(){
+  const sid = getSID();
+  if (!sid) return addSys('sid가 없습니다.');
+  const r = await fetch(`${API.STATE}?sid=${encodeURIComponent(sid)}`);
+  const j = await r.json();
+  addSys('현재 상태\n' + JSON.stringify(j, null, 2));
+}
+
+/** ===================== 부트스트랩 ===================== **/
+function clearChat(){
+  $chat.innerHTML = '';
+  $latency.textContent = 'TTFB: — / Done: —';
+}
+async function boot(askFirst=true){
+  // 저장된 선택값 반영
+  setTenant(getTenant());
+  setAssistant(getAssistant());
+
+  // 세션 시작(업서트)
+  await startSession({});
+  // 초기 안내 질문 트리거 (백엔드의 목적 질문/FAQ 흐름 실행)
+  if (askFirst){
+    await chatSend('시작', { showUserBubble: false });
   }
 }
 
-/*** 이벤트 바인딩 ***/
-$send.addEventListener('click', () => send());
-$cancel.addEventListener('click', ()=> { if (controller) controller.abort(); });
+/** ===================== 이벤트 ===================== **/
+$send.addEventListener('click', async ()=> {
+  const t = $input.value.trim();
+  if (!t) return;
+  $input.value = '';
+  chatSend(t);
+});
 $input.addEventListener('keydown', (e)=>{
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+  if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); $send.click(); }
 });
-document.getElementById('restartSmall').addEventListener('click', async () => {
-  // 새 sid 발급
+$cancel.addEventListener('click', ()=> { if (controller) controller.abort(); });
+$state.addEventListener('click', showState);
+
+$tenantSel.addEventListener('change', async (e)=> {
+  setTenant(e.target.value);
+  addSys(`tenant을 "${getTenant()}"로 변경했습니다. 새 대화를 시작하면 반영됩니다.`);
+});
+$assistantSel.addEventListener('change', async (e)=> {
+  setAssistant(e.target.value);
+  addSys(`assistant를 "${getAssistant()}"로 변경했습니다. 새 대화를 시작하면 반영됩니다.`);
+});
+$newChatBtn.addEventListener('click', async ()=>{
+  // 새 sid로 초기화 후 재시작
   const newSid = (crypto.randomUUID ? crypto.randomUUID() : (Date.now()+"-"+Math.random().toString(16).slice(2)));
-  try { localStorage.setItem('sid', newSid); } catch {}
-  location.reload(); // 간단히 리셋 (아래 onload에서 /session/start 호출)
+  setSID(newSid);
+  clearChat();
+  addSys('새 대화를 시작합니다.');
+  await startSession({ tenant: getTenant(), assistant: getAssistant() });
+  await chatSend('시작', { showUserBubble: false });
 });
+$finalizeBtn.addEventListener('click', finalizeLead);
 
-document.getElementById('finalize').addEventListener('click', finalizeLead);
+/** ===================== 초기 진입 ===================== **/
+(function init(){
+  // 초기 sid 없으면 생성
+  if (!getSID()){
+    const s = (crypto.randomUUID ? crypto.randomUUID() : (Date.now()+"-"+Math.random().toString(16).slice(2)));
+    setSID(s);
+  } else {
+    setSID(getSID()); // 라벨 갱신
+  }
+  // 저장된 선택값 반영
+  $tenantSel.value = getTenant();
+  $assistantSel.value = getAssistant();
 
-// tenant/assistant 변경 시 세션 업서트
-$tenant.addEventListener('change', () => startSession(SID));
-$assistant.addEventListener('change', () => startSession(SID));
-
-/*** 초기 진입: 세션 보장 후 안내 ***/
-(async () => {
-  await startSession(SID);
-  addSys('빠른 사용법: 메시지를 입력하고 Enter를 누르세요. 스트리밍으로 바로 표시됩니다.');
-  addSys('TIP: 상단의 tenant/assistant를 바꿀 수 있고, "새 대화"를 누르면 새로운 세션으로 시작합니다.');
+  // 부트: 세션 시작 + 첫 질문 자동
+  boot(true).catch(err => addSys('세션 초기화 실패: ' + (err.message||err)));
 })();
 </script>
 </body>
