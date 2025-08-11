@@ -68,6 +68,20 @@ const $send = document.getElementById('send');
 const $cancel = document.getElementById('cancel');
 const $latency = document.getElementById('latency');
 
+const SID = (() => {
+  try {
+    let s = localStorage.getItem('sid');
+    if (!s) {
+      s = (crypto.randomUUID ? crypto.randomUUID() :
+           (Date.now()+"-"+Math.random().toString(16).slice(2)));
+      localStorage.setItem('sid', s);
+    }
+    return s;
+  } catch {
+    return String(Date.now());
+  }
+})();
+
 let controller = null; // AbortController
 
 function addMsg(role, text, pending=false) {
@@ -121,7 +135,7 @@ async function send() {
       const resp = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text }),
+        body: JSON.stringify({ message: text, sid: SID }),
         signal: controller.signal,
       });
 
