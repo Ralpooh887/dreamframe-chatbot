@@ -146,18 +146,59 @@ async function send() {
 
         // SSE 형식 지원(data: ...\n\n), NDJSON, 순수 텍스트 스트림 모두 처리
         // 1) SSE 파싱
-        if ((resp.headers.get('content-type')||'').includes('text/event-stream')) {
+        // if ((resp.headers.get('content-type')||'').includes('text/event-stream')) {
+        //   const parts = buffer.split('\n\n');
+        //   buffer = parts.pop();
+        //   for (const p of parts) {
+        //     const line = p.split('\n').find(l => l.startsWith('data:')) || '';
+        //     const data = line.replace(/^data:\s?/, '');
+        //     if (!data || data === '[DONE]') continue;
+        //     bot.textContent += data;
+        //   }
+        // } else {
+        //   // 2) NDJSON 또는 텍스트 스트림
+        //   // NDJSON이면 줄단위 JSON으로 누적
+        //   const lines = buffer.split('\n');
+        //   buffer = lines.pop();
+        //   for (const ln of lines) {
+        //     const t = ln.trim();
+        //     if (!t) continue;
+        //     try {
+        //       const obj = JSON.parse(t);
+        //       if (obj.delta) bot.textContent += obj.delta; // {"delta": "..."}
+        //       else if (obj.text) bot.textContent += obj.text;
+        //       else bot.textContent += t;
+        //     } catch { // 순수 텍스트로 취급
+        //       bot.textContent += t;
+        //     }
+        //   }
+        // }
+        const isSSE = (resp.headers.get('content-type') || '').includes('text/event-stream');
+        if (isSSE) {
+          // SSE 프레임(빈 줄 \n\n로 구분) 안의 data: 라인들을 모아 JSON이면 delta.content만 꺼냄
           const parts = buffer.split('\n\n');
           buffer = parts.pop();
           for (const p of parts) {
-            const line = p.split('\n').find(l => l.startsWith('data:')) || '';
-            const data = line.replace(/^data:\s?/, '');
-            if (!data || data === '[DONE]') continue;
-            bot.textContent += data;
+            const dataLines = p.split('\n')
+              .filter(l => l.startsWith('data:'))
+              .map(l => l.replace(/^data:\s?/, ''));
+            for (const data of dataLines) {
+              if (!data || data === '[DONE]') continue;
+              let out = '';
+              try {
+                const obj = JSON.parse(data);
+                if (obj?.choices?.length) {
+                  for (const ch of obj.choices) out += (ch?.delta?.content || ch?.text || '');
+                }
+              } catch {
+                // JSON이 아니면 원문 텍스트로
+                out = data;
+              }
+              if (out) bot.textContent += out;
+            }
           }
         } else {
-          // 2) NDJSON 또는 텍스트 스트림
-          // NDJSON이면 줄단위 JSON으로 누적
+          // NDJSON/텍스트 스트림도 JSON이면 delta/text 우선으로 출력
           const lines = buffer.split('\n');
           buffer = lines.pop();
           for (const ln of lines) {
@@ -165,10 +206,9 @@ async function send() {
             if (!t) continue;
             try {
               const obj = JSON.parse(t);
-              if (obj.delta) bot.textContent += obj.delta; // {"delta": "..."}
-              else if (obj.text) bot.textContent += obj.text;
-              else bot.textContent += t;
-            } catch { // 순수 텍스트로 취급
+              const out = (obj?.delta ?? obj?.text ?? obj?.choices?.[0]?.delta?.content ?? '');
+              bot.textContent += out || t;
+            } catch {
               bot.textContent += t;
             }
           }
