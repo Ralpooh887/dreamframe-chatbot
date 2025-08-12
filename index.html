@@ -1,336 +1,184 @@
 <!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Fast Chat (S1)</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Fast Chat – 상담예약</title>
   <style>
-    :root { --maxw: 860px; }
-    * { box-sizing: border-box; }
-    body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans KR, "Apple SD Gothic Neo", sans-serif; margin: 0; background: #0b0f14; color: #e6edf3; }
-    a { color: #9bd2ff; text-decoration: none; }
-    .wrap { max-width: var(--maxw); margin: 0 auto; padding: 20px 16px 120px; }
-    header { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; margin-bottom: 8px; }
-    h1 { font-size: 18px; font-weight: 700; margin: 0; letter-spacing: .2px; }
-    .topline { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-    .pill { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius: 999px; border:1px solid #263247; background:#0f1720; font-size:12px; }
-    select, button.small, input.small { height: 32px; border-radius: 10px; border:1px solid #2a3950; background:#15202b; color:#e6edf3; padding:0 10px; }
-    button.small[disabled]{ opacity:.6; cursor: not-allowed; }
-    .muted { opacity:.75; font-size:12px; }
-    .latency { font-size: 12px; opacity: .75; }
-    .chat { display:flex; flex-direction:column; gap:10px; margin-top: 8px; }
-    .msg { padding:12px 14px; border-radius:14px; line-height:1.5; white-space:pre-wrap; word-break:break-word; }
-    .user { background:#1b2530; align-self:flex-end; border:1px solid #253247; }
-    .bot { background:#0f1720; align-self:flex-start; border:1px solid #1a2635; }
-    .pending { opacity:.85; }
-    .sys { align-self:center; font-size:12px; opacity:.75; }
-    .footer { position:fixed; left:0; right:0; bottom:0; background:#0d141b; border-top:1px solid #1a2432; }
-    .inp { max-width:var(--maxw); margin:0 auto; display:grid; gap:8px; grid-template-columns: 1fr auto auto auto; padding:12px 16px; }
-    textarea { resize:none; width:100%; height:56px; padding:12px; border-radius:12px; border:1px solid #233045; background:#0b121a; color:#e6edf3; outline:none; }
-    button { height:56px; border-radius:12px; border:1px solid #2a3950; background:#15202b; color:#e6edf3; padding:0 14px; cursor:pointer; }
+    :root { --maxw: 820px; }
+    *{ box-sizing:border-box; }
+    body{ margin:0; background:#0b0f14; color:#e6edf3; font:14px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Noto Sans KR,"Apple SD Gothic Neo",sans-serif; }
+    .wrap{ max-width:var(--maxw); margin:0 auto; padding:24px 16px 120px; }
+    header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+    h1{ margin:0; font-size:18px; font-weight:700; }
+    .lat{ font-size:12px; opacity:.7; }
+    .chat{ display:flex; flex-direction:column; gap:10px; }
+    .msg{ padding:12px 14px; border-radius:14px; white-space:pre-wrap; word-break:break-word; line-height:1.5; }
+    .user{ align-self:flex-end; background:#1b2530; border:1px solid #253247; }
+    .bot{ align-self:flex-start; background:#0f1720; border:1px solid #1a2635; }
+    .sys{ align-self:center; font-size:12px; opacity:.7; }
+    .pending{ opacity:.85; }
+    .footer{ position:fixed; left:0; right:0; bottom:0; background:#0d141b; border-top:1px solid #1a2432; }
+    .inp{ max-width:var(--maxw); margin:0 auto; display:grid; gap:8px; grid-template-columns:1fr auto auto auto; padding:12px 16px; }
+    textarea{ height:44px; resize:none; padding:12px; border-radius:12px; border:1px solid #233045; background:#0b121a; color:#e6edf3; outline:none; }
+    button{ height:44px; border-radius:12px; border:1px solid #2a3950; background:#15202b; color:#e6edf3; padding:0 14px; cursor:pointer; }
     button[disabled]{ opacity:.6; cursor:not-allowed; }
-    .hint { grid-column:1 / -1; font-size:12px; opacity:.7; }
-    code { background:#0f1720; border:1px solid #1a2635; padding:2px 6px; border-radius:6px; }
+    .hint{ grid-column:1/-1; font-size:12px; opacity:.7; }
+    .row{ display:flex; gap:8px; flex-wrap:wrap; margin:10px 0 0; }
+    .chip{ border:1px solid #334559; background:#14202b; padding:8px 12px; border-radius:999px; cursor:pointer; font-size:13px; }
+    .chip:hover{ background:#192a3a; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <h1>⚡ Fast Chat (S1)</h1>
-      <div class="latency" id="latency">TTFB: — / Done: —</div>
+      <h1>⚡ 상담 도우미</h1>
+      <div class="lat" id="lat">TTFB: — / Done: —</div>
     </header>
 
-    <div class="topline">
-      <span class="pill">tenant
-        <select id="tenantSel">
-          <option value="default" selected>default</option>
-        </select>
-      </span>
+    <div id="chat" class="chat" aria-live="polite"></div>
 
-      <span class="pill">assistant
-        <select id="assistantSel">
-          <option value="default" selected>default (상담예약)</option>
-          <option value="sales">sales</option>
-          <option value="support">support</option>
-          <option value="visa">visa</option>
-        </select>
-      </span>
-
-      <button class="small" id="newChatBtn">새 대화</button>
-      <button class="small" id="finalizeBtn">상담 접수</button>
-
-      <span class="pill muted">sid: <span id="sidLbl">—</span></span>
-    </div>
-
-    <div class="muted" style="margin-top:6px;">
-      빠른 사용법: 메시지를 입력하고 Enter를 누르세요. 스트리밍으로 바로 표시됩니다. <br/>
-      TIP: 상단의 <b>tenant/assistant</b>를 바꾸고 <b>“새 대화”</b>를 누르면 새로운 세션으로 시작합니다.
-    </div>
-
-    <div id="chat" class="chat" aria-live="polite" aria-busy="false"></div>
+    <div class="row" id="firstMenu"></div>
+    <div class="row" id="faqMenu" style="display:none"></div>
   </div>
 
   <div class="footer">
     <div class="inp">
-      <textarea id="input" placeholder="무엇이든 물어보세요… (Enter=전송, Shift+Enter=줄바꿈)" spellcheck="false"></textarea>
+      <textarea id="input" placeholder="메시지를 입력하세요 (Enter=전송, Shift+Enter=줄바꿈)" spellcheck="false"></textarea>
       <button id="send">전송</button>
+      <button id="restart">다시시작</button>
       <button id="cancel" disabled>중단</button>
-      <button id="state">상태</button>
-      <div class="hint">
-        <strong>API:</strong> <code id="endpointLbl"></code> · <span>초기 진입 시 자동으로 세션을 시작하고, 안내 질문을 즉시 띄웁니다.</span>
-      </div>
+      <div class="hint"><strong>엔드포인트:</strong> <code id="ep"></code></div>
     </div>
   </div>
 
 <script>
-/** ===================== 설정 ===================== **/
-const API_BASE = "https://stream-chat-worker.koreavisa.workers.dev";
-const API = {
-  START:    `${API_BASE}/session/start`,
-  CHAT:     `${API_BASE}/chat`,
-  FINALIZE: `${API_BASE}/lead/finalize`,
-  STATE:    `${API_BASE}/__state`,
-};
-document.getElementById('endpointLbl').textContent = API_BASE;
+const API_URL = "https://stream-chat-worker.koreavisa.workers.dev/chat";
+const START_URL = "https://stream-chat-worker.koreavisa.workers.dev/session/start";
+document.getElementById('ep').textContent = API_URL;
 
-/** ===================== 엘리먼트 참조 ===================== **/
 const $chat = document.getElementById('chat');
-const $input = document.getElementById('input');
+const $lat  = document.getElementById('lat');
+const $input= document.getElementById('input');
 const $send = document.getElementById('send');
-const $cancel = document.getElementById('cancel');
-const $state = document.getElementById('state');
-const $latency = document.getElementById('latency');
-const $tenantSel = document.getElementById('tenantSel');
-const $assistantSel = document.getElementById('assistantSel');
-const $sidLbl = document.getElementById('sidLbl');
-const $newChatBtn = document.getElementById('newChatBtn');
-const $finalizeBtn = document.getElementById('finalizeBtn');
+const $cancel=document.getElementById('cancel');
+const $restart=document.getElementById('restart');
+const $firstMenu=document.getElementById('firstMenu');
+const $faqMenu=document.getElementById('faqMenu');
 
-let controller = null; // AbortController
+let controller=null;
+let ASSIST = null; // null | 'progress' | 'indiRehab'
+let SID = null;
 
-/** ===================== SID/상태 ===================== **/
-function getSID(){ try { return localStorage.getItem('sid') || ""; } catch { return ""; } }
-function setSID(v){ try { localStorage.setItem('sid', v); } catch {} $sidLbl.textContent = v ? `${v.slice(0,4)}…${v.slice(-4)}` : '—'; }
-function getTenant(){ try { return localStorage.getItem('tenant') || 'default'; } catch { return 'default'; } }
-function setTenant(v){ try { localStorage.setItem('tenant', v); } catch {} $tenantSel.value = v; }
-function getAssistant(){ try { return localStorage.getItem('assistant') || 'default'; } catch { return 'default'; } }
-function setAssistant(v){ try { localStorage.setItem('assistant', v); } catch {} $assistantSel.value = v; }
+init();
+
+async function init(){
+  SID = restoreSid();
+  await startSession();
+  greet();
+  showFirstMenu();
+}
+
+function restoreSid(){
+  try{
+    let s = localStorage.getItem('sid');
+    if (!s){ s = (crypto.randomUUID ? crypto.randomUUID() : Date.now()+"-"+Math.random().toString(16).slice(2)); localStorage.setItem('sid', s); }
+    return s;
+  }catch{ return String(Date.now()); }
+}
+async function startSession(){
+  try{
+    await fetch(START_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ sid: SID, assistant: ASSIST||undefined }) });
+  }catch(e){ console.warn(e); }
+}
+
+function greet(){
+  addSys('아래 중 하나를 선택해 시작하세요.');
+}
+function showFirstMenu(){
+  $firstMenu.style.display='flex';
+  $firstMenu.innerHTML='';
+  mkChip($firstMenu, '일반문의', ()=>{ ASSIST=null; showFaqMenu(); addBot('원하시는 항목을 선택해 주세요.'); });
+  mkChip($firstMenu, '진행상황', ()=>{ ASSIST='progress'; hideFaqMenu(); addBot('진행상황 확인을 위해 몇 가지만 여쭤볼게요. 먼저 성함을 알려주세요.'); startSession(); });
+  mkChip($firstMenu, '상담예약(개인회생)', ()=>{ ASSIST='indiRehab'; hideFaqMenu(); addBot('개인회생 상담을 도와드릴게요. 현재 상황을 편하게 말씀해 주시면 한 번에 하나씩 도와드리겠습니다.'); startSession(); });
+}
+function showFaqMenu(){
+  $faqMenu.style.display='flex';
+  $faqMenu.innerHTML='';
+  // 이 버튼들은 /chat으로 그대로 보내어 FAQ_KV로 즉답 받음
+  mkChip($faqMenu, '영업시간', ()=> sendText('영업시간 알려줘'));
+  mkChip($faqMenu, '지점 주소', ()=> sendText('주소 알려줘'));
+  mkChip($faqMenu, '팩스 번호', ()=> sendText('팩스 번호 알려줘'));
+  mkChip($faqMenu, '이메일', ()=> sendText('이메일 주소 알려줘'));
+}
+function hideFaqMenu(){ $faqMenu.style.display='none'; }
+
+function mkChip($row, label, onClick){
+  const b = document.createElement('button');
+  b.className='chip'; b.textContent=label; b.onclick=onClick; $row.appendChild(b);
+}
 
 function addMsg(role, text, pending=false){
-  const div = document.createElement('div');
-  div.className = `msg ${role} ${pending ? 'pending' : ''}`;
-  div.textContent = text;
-  $chat.appendChild(div);
-  $chat.scrollTop = $chat.scrollHeight;
-  return div;
+  const div=document.createElement('div'); div.className=`msg ${role} ${pending?'pending':''}`; div.innerHTML=text; $chat.appendChild(div); $chat.scrollTop=$chat.scrollHeight; return div;
 }
-function addSys(text){
-  const div = document.createElement('div');
-  div.className = 'sys';
-  div.textContent = text;
-  $chat.appendChild(div);
-  $chat.scrollTop = $chat.scrollHeight;
-  return div;
-}
-function setBusy(b){
-  $send.disabled = b;
-  $cancel.disabled = !b;
-  $chat.setAttribute('aria-busy', String(b));
-}
-function fmtMs(ms){ return (ms||ms===0) ? `${ms}ms` : '—'; }
+function addBot(t){ return addMsg('bot', t); }
+function addUser(t){ return addMsg('user', t); }
+function addSys(t){ const d=document.createElement('div'); d.className='sys'; d.textContent=t; $chat.appendChild(d); }
 
-/** ===================== API 호출 ===================== **/
-async function startSession(opts={}){
-  const body = {
-    sid: getSID() || undefined,
-    tenant: opts.tenant || getTenant(),
-    assistant: opts.assistant || getAssistant()
-  };
-  const r = await fetch(API.START, {
-    method: 'POST',
-    headers: { 'Content-Type':'application/json' },
-    body: JSON.stringify(body)
-  });
-  if (!r.ok) throw new Error(`세션 시작 실패 (${r.status})`);
-  const j = await r.json();
-  if (!j?.sid) throw new Error('sid 없음');
-  setSID(j.sid);
-  return j.sid;
-}
+function setBusy(b){ $send.disabled=b; $cancel.disabled=!b; }
+function fmtMs(ms){ return ms? `${ms}ms` : '—'; }
 
-async function chatSend(text, { showUserBubble = true } = {}){
-  if (!text) return;
-  if (showUserBubble) addMsg('user', text);
+$send.onclick = ()=>{ const t=$input.value.trim(); if(!t) return; $input.value=''; sendText(t); };
+$input.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); $send.click(); }});
+$cancel.onclick = ()=>{ if(controller) controller.abort(); };
+$restart.onclick = async ()=>{
+  try{ localStorage.removeItem('sid'); }catch{}
+  SID = restoreSid(); ASSIST=null; $chat.innerHTML=''; hideFaqMenu(); showFirstMenu(); await startSession(); addSys('세션을 새로 시작했어요.');
+};
 
+async function sendText(text){
+  addUser(text);
   setBusy(true);
-  let t0 = performance.now();
-  let tFirst = null; $latency.textContent = `TTFB: … / Done: …`;
-
-  const bot = addMsg('bot', '', true);
-
+  const t0=performance.now(); let tFirst=null; $lat.textContent='TTFB: … / Done: …';
+  const bot=addMsg('bot','',true);
   try{
     controller = new AbortController();
-    const resp = await fetch(API.CHAT, {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json' },
-      body: JSON.stringify({
-        message: text,
-        sid: getSID(),
-        tenant: getTenant(),
-        assistant: getAssistant()
-      }),
+    const resp = await fetch(API_URL, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ message: text, sid: SID, assistant: ASSIST||undefined }),
       signal: controller.signal
     });
-
     if (!resp.ok || !resp.body) throw new Error(`서버 오류: ${resp.status}`);
 
     const reader = resp.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-
+    const dec = new TextDecoder();
+    let buffer='';
     while(true){
       const { value, done } = await reader.read();
       if (done) break;
-      const chunk = decoder.decode(value, { stream:true });
-
-      if (tFirst === null){ tFirst = Math.round(performance.now() - t0); $latency.textContent = `TTFB: ${fmtMs(tFirst)} / Done: …`; }
-
+      const chunk = dec.decode(value, { stream:true });
+      if (tFirst===null){ tFirst=Math.round(performance.now()-t0); $lat.textContent=`TTFB: ${fmtMs(tFirst)} / Done: …`; }
       buffer += chunk;
-      const isSSE = (resp.headers.get('content-type')||'').includes('text/event-stream');
-
-      if (isSSE){
-        const parts = buffer.split('\n\n');
-        buffer = parts.pop();
-        for (const p of parts){
-          const lines = p.split('\n').filter(l => l.startsWith('data:')).map(l => l.replace(/^data:\s?/, ''));
-          for (const data of lines){
-            if (!data || data === '[DONE]') continue;
-            let out = '';
-            try {
-              const obj = JSON.parse(data);
-              if (obj?.choices?.length){
-                for (const ch of obj.choices) out += (ch?.delta?.content || ch?.text || '');
-              }
-            } catch { out = data; }
-            if (out) bot.textContent += out;
-          }
-        }
-      } else {
-        const lines = buffer.split('\n'); buffer = lines.pop();
-        for (const ln of lines){
-          const t = ln.trim(); if (!t) continue;
-          try {
-            const obj = JSON.parse(t);
-            const out = (obj?.delta ?? obj?.text ?? obj?.choices?.[0]?.delta?.content ?? '');
-            bot.textContent += out || t;
-          } catch { bot.textContent += t; }
-        }
+      // SSE data 프레임만 붙임(서버가 JSON은 파싱해서 display만 보내므로 여기서는 그대로 출력)
+      const frames = buffer.split('\n\n'); buffer = frames.pop();
+      for (const f of frames){
+        const line = f.split('\n').find(l=>l.startsWith('data:'));
+        if (!line) continue;
+        const data = line.replace(/^data:\s?/, '');
+        if (!data || data==='[DONE]') continue;
+        bot.innerHTML += data;
       }
     }
-  } catch(err){
-    console.error(err);
-    bot.textContent += `\n[오류] ${err.message || err}`;
-  } finally {
-    bot.classList.remove('pending');
-    setBusy(false);
-    const doneMs = Math.round(performance.now() - t0);
-    $latency.textContent = `TTFB: ${fmtMs(tFirst)} / Done: ${fmtMs(doneMs)}`;
-    controller = null;
+  }catch(e){
+    bot.textContent += `\n[오류] ${e.message||e}`;
+  }finally{
+    bot.classList.remove('pending'); setBusy(false);
+    const doneMs = Math.round(performance.now()-t0);
+    $lat.textContent = `TTFB: ${fmtMs(tFirst)} / Done: ${fmtMs(doneMs)}`;
+    controller=null;
   }
 }
-
-async function finalizeLead(){
-  const sid = getSID();
-  if (!sid) return addSys('sid가 없습니다. 새 대화로 시작해 주세요.');
-  const r = await fetch(API.FINALIZE, {
-    method: 'POST',
-    headers: { 'Content-Type':'application/json' },
-    body: JSON.stringify({ sid })
-  });
-  const j = await r.json();
-  if (j.ok){
-    addSys('✅ 상담 접수 완료! 담당자가 곧 연락드립니다.');
-  } else if (j.missing && j.missing.length){
-    addSys(`아직 필요한 정보가 부족합니다: ${j.missing.join(', ')}\n해당 항목을 채워 주세요.`);
-  } else {
-    addSys(`접수 실패: ${j.error || '알 수 없는 오류'}`);
-  }
-}
-
-async function showState(){
-  const sid = getSID();
-  if (!sid) return addSys('sid가 없습니다.');
-  const r = await fetch(`${API.STATE}?sid=${encodeURIComponent(sid)}`);
-  const j = await r.json();
-  addSys('현재 상태\n' + JSON.stringify(j, null, 2));
-}
-
-/** ===================== 부트스트랩 ===================== **/
-function clearChat(){
-  $chat.innerHTML = '';
-  $latency.textContent = 'TTFB: — / Done: —';
-}
-async function boot(askFirst=true){
-  // 저장된 선택값 반영
-  setTenant(getTenant());
-  setAssistant(getAssistant());
-
-  // 세션 시작(업서트)
-  await startSession({});
-  // 초기 안내 질문 트리거 (백엔드의 목적 질문/FAQ 흐름 실행)
-  if (askFirst){
-    await chatSend('시작', { showUserBubble: false });
-  }
-}
-
-/** ===================== 이벤트 ===================== **/
-$send.addEventListener('click', async ()=> {
-  const t = $input.value.trim();
-  if (!t) return;
-  $input.value = '';
-  chatSend(t);
-});
-$input.addEventListener('keydown', (e)=>{
-  if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); $send.click(); }
-});
-$cancel.addEventListener('click', ()=> { if (controller) controller.abort(); });
-$state.addEventListener('click', showState);
-
-$tenantSel.addEventListener('change', async (e)=> {
-  setTenant(e.target.value);
-  addSys(`tenant을 "${getTenant()}"로 변경했습니다. 새 대화를 시작하면 반영됩니다.`);
-});
-$assistantSel.addEventListener('change', async (e)=> {
-  setAssistant(e.target.value);
-  addSys(`assistant를 "${getAssistant()}"로 변경했습니다. 새 대화를 시작하면 반영됩니다.`);
-});
-$newChatBtn.addEventListener('click', async ()=>{
-  // 새 sid로 초기화 후 재시작
-  const newSid = (crypto.randomUUID ? crypto.randomUUID() : (Date.now()+"-"+Math.random().toString(16).slice(2)));
-  setSID(newSid);
-  clearChat();
-  addSys('새 대화를 시작합니다.');
-  await startSession({ tenant: getTenant(), assistant: getAssistant() });
-  await chatSend('시작', { showUserBubble: false });
-});
-$finalizeBtn.addEventListener('click', finalizeLead);
-
-/** ===================== 초기 진입 ===================== **/
-(function init(){
-  // 초기 sid 없으면 생성
-  if (!getSID()){
-    const s = (crypto.randomUUID ? crypto.randomUUID() : (Date.now()+"-"+Math.random().toString(16).slice(2)));
-    setSID(s);
-  } else {
-    setSID(getSID()); // 라벨 갱신
-  }
-  // 저장된 선택값 반영
-  $tenantSel.value = getTenant();
-  $assistantSel.value = getAssistant();
-
-  // 부트: 세션 시작 + 첫 질문 자동
-  boot(true).catch(err => addSys('세션 초기화 실패: ' + (err.message||err)));
-})();
 </script>
 </body>
 </html>
